@@ -1,0 +1,272 @@
+product-api/
+├── node_modules/
+├── .env
+├── package.json
+├── server.js               # Point d'entrée de l'application
+├── config/
+│   └── db.js               # Configuration de la base de données
+├── models/
+│   └── Product.js          # Schéma Mongoose pour le produit
+└── routes/
+    └── productRoutes.js    # Définition des routes de l'API
+
+
+
+    Parfait \! Passer à **Prisma** avec **PostgreSQL** est un excellent choix pour une API REST moderne, car cela apporte de la robustesse et une meilleure gestion des types (idéal si vous prévoyez d'utiliser TypeScript, mais nous allons rester en JavaScript pour l'instant).
+
+Voici comment adapter la structure précédente pour utiliser **Express**, **Prisma**, et **PostgreSQL**.
+
+## 1\. Initialisation et Installation
+
+1.  **Créez et initialisez le projet** (si ce n'est pas déjà fait) :
+
+    ```bash
+    npm init -y
+    ```
+
+2.  **Installez les dépendances principales** :
+
+    ```bash
+    npm install express dotenv @prisma/client
+    ```
+
+3.  **Installez Prisma CLI comme dépendance de développement** :
+
+    ```bash
+    npm install -D prisma
+    ```
+
+-----
+
+## 2\. Configuration de PostgreSQL et Prisma
+
+### a. Configuration de la Base de Données
+
+1.  **Créez un fichier `.env`** pour définir l'URI de connexion à votre base de données PostgreSQL :
+
+    ```
+    # Remplacez les valeurs par les vôtres
+    DATABASE_URL="postgresql://utilisateur:motdepasse@localhost:5432/nom_de_la_db?schema=public"
+    PORT=3000
+    ```
+
+2.  **Initialisez Prisma** :
+
+    ```bash
+    npx prisma init
+    ```
+
+    Cette commande crée le dossier `prisma` et le fichier `prisma/schema.prisma`. Elle configure automatiquement le `provider` à `postgresql`.
+
+### b. Définition du Schéma de Produit
+
+Dans le fichier `prisma/schema.prisma`, définissez votre modèle `Product` :
+
+```prisma
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle Produit
+model Product {
+  id             Int     @id @default(autoincrement()) // Clé primaire auto-incrémentée
+  name           String  @unique // Nom unique
+  description    String? // Description optionnelle (utilise String?)
+  price          Float   // Prix (utilise Float ou Decimal)
+  countInStock   Int     @default(0) // Quantité en stock
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+```
+
+### c. Migration de la Base de Données
+
+Appliquez le schéma à votre base de données PostgreSQL :
+
+```bash
+npx prisma migrate dev --name init_products_table
+```
+
+-----
+
+## 3\. Configuration du Client Prisma
+
+Nous allons créer un client Prisma réutilisable pour toute l'application.
+
+Dans `config/prismaClient.js` (ou directement dans le point d'entrée pour la simplicité) :
+
+```javascript
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+module.exports = prisma;
+```
+
+-----
+
+## 4\. Contrôleurs CRUD (Logique Métier)
+
+Créez un fichier `controllers/productController.js` pour la logique CRUD. Nous utiliserons le client Prisma (`prisma`).
+
+```javascript
+const prisma = require('../config/prismaClient'); // Le client configuré
+
+// --- CREATE ---
+// @route   POST /api/products
+exports.createProduct = async (req, res) => {
+  try {
+    const { name, description, price, countInStock } = req.body;
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price: parseFloat(price), // Assurez-vous que le prix est un nombre
+        countInStock: parseInt(countInStock) || 0,
+      },
+    });
+    res.status(201).json(product);
+  } catch (error) {
+    // 400 Bad Request ou 409 Conflict (si 'name' est unique)
+    res.status(400).json({ message: 'Erreur lors de la création du produit.', error: error.message });
+  }
+};
+
+// --- READ ALL ---
+// @route   GET /api/products
+exports.getProducts = async (req, res) => {
+  try {
+    const products = await prisma.product.findMany();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la récupération des produits.' });
+  }
+};
+
+// --- READ ONE ---
+// @route   GET /api/products/:id
+exports.getProductById = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const product = await prisma.product.findUnique({
+      where: { id },
+    });
+    if (product) {
+      res.status(200).json(product);
+    } else {
+      res.status(404).json({ message: 'Produit non trouvé.' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+// --- UPDATE ---
+// @route   PUT /api/products/:id
+exports.updateProduct = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    // On ne met à jour que les champs fournis dans req.body
+    const product = await prisma.product.update({
+      where: { id },
+      data: req.body,
+    });
+    res.status(200).json(product);
+  } catch (error) {
+    // Gérer 404 si l'ID n'existe pas ou 400 si les données sont invalides
+    res.status(400).json({ message: 'Erreur lors de la mise à jour du produit.', error: error.message });
+  }
+};
+
+// --- DELETE ---
+// @route   DELETE /api/products/:id
+exports.deleteProduct = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.product.delete({
+      where: { id },
+    });
+    res.status(204).send(); // 204 No Content est standard pour une suppression réussie sans corps de réponse
+  } catch (error) {
+    res.status(404).json({ message: 'Produit non trouvé ou erreur de suppression.', error: error.message });
+  }
+};
+```
+
+-----
+
+## 5\. Routes et Serveur
+
+### a. Définition des Routes
+
+Le fichier `routes/productRoutes.js` reste le même que dans l'exemple Mongoose, mais il utilise le nouveau contrôleur :
+
+```javascript
+const express = require('express');
+const router = express.Router();
+const productController = require('../controllers/productController');
+
+// Route pour lister TOUS les produits et pour CREER un nouveau produit
+router.route('/').get(productController.getProducts).post(productController.createProduct);
+
+// Route pour obtenir, mettre à jour, et supprimer un produit par ID
+router
+  .route('/:id')
+  .get(productController.getProductById)
+  .put(productController.updateProduct)
+  .delete(productController.deleteProduct);
+
+module.exports = router;
+```
+
+### b. Fichier Serveur Principal (`server.js`)
+
+```javascript
+const express = require('express');
+const dotenv = require('dotenv');
+const productRoutes = require('./routes/productRoutes');
+
+dotenv.config();
+
+const app = express();
+
+// Middleware pour analyser le corps des requêtes en JSON
+app.use(express.json());
+
+// Santé du serveur
+app.get('/', (req, res) => {
+  res.send('API des produits (Prisma/PostgreSQL) en cours...');
+});
+
+// Montage des routes produits
+app.use('/api/products', productRoutes);
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Serveur démarré sur le port ${PORT}`);
+});
+
+// Important : Vous n'avez pas besoin de "connecter" la DB comme avec Mongoose,
+// le client Prisma gère la connexion à la première requête.
+```
+
+-----
+
+## 6\. Lancement
+
+1.  Assurez-vous que votre serveur PostgreSQL est démarré.
+2.  Lancez l'application :
+    ```bash
+    node server.js
+    ```
+    (Ou `nodemon server.js` si vous l'avez installé)
+
+Votre API CRUD est maintenant fonctionnelle avec **Express**, **Prisma**, et **PostgreSQL** \! 🎉

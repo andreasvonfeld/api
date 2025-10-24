@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoriel : API REST CRUD de Produits (Node.js, Express, Prisma, PostgreSQL)</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f9; }
+        h1, h2 { color: #333; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+        h3 { color: #555; }
+        code {
+            display: block;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #282c34;
+            color: #abb2bf;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap; /* Permet un retour à la ligne si le code est trop long */
+        }
+        pre { margin: 0; }
+        .filename { font-weight: bold; color: #4CAF50; margin-top: 20px; }
+        .command { background-color: #e0e0e0; color: #333; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <h1>Tutoriel : API REST CRUD de Produits (Node.js, Express, Prisma, PostgreSQL) 🚀</h1>
+    <p>Ce tutoriel vous guide dans la création d'une API REST complète pour gérer des produits, en utilisant <strong>Node.js</strong>, le framework <strong>Express</strong>, l'ORM <strong>Prisma</strong> et la base de données <strong>PostgreSQL</strong>.</p>
+
+    <h2>1. Initialisation et Installation</h2>
+    <p>Lancez ces commandes dans votre terminal pour initialiser votre projet et installer les dépendances nécessaires.</p>
+
+    <h3>Commandes d'installation</h3>
+    <pre><code class="command">npm init -y
+npm install express dotenv @prisma/client
+npm install -D prisma</code></pre>
+
+    <h2>2. Configuration de la Base de Données (PostgreSQL & Prisma)</h2>
+
+    <h3>Commandes Prisma (Initialisation)</h3>
+    <p>Initialisez Prisma pour créer le dossier <code>prisma</code> et le fichier <code>schema.prisma</code>.</p>
+    <pre><code class="command">npx prisma init</code></pre>
+
+    <h3 class="filename">Fichier: .env</h3>
+    <p>Définissez votre chaîne de connexion PostgreSQL. Assurez-vous que la base de données existe.</p>
+    <pre><code>DATABASE_URL="postgresql://utilisateur:motdepasse@localhost:5432/nom_de_la_db?schema=public"
+PORT=3000</code></pre>
+
+    <h3 class="filename">Fichier: prisma/schema.prisma</h3>
+    <p>Définissez le modèle de données <code>Product</code>.</p>
+    <pre><code>generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id             Int     @id @default(autoincrement())
+  name           String  @unique
+  description    String?
+  price          Float
+  countInStock   Int     @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}</code></pre>
+
+    <h3>Commandes Prisma (Migration)</h3>
+    <p>Appliquez le schéma à la base de données.</p>
+    <pre><code class="command">npx prisma migrate dev --name init_products_table
+npx prisma generate</code></pre>
+
+    <h2>3. Configuration du Client Prisma</h2>
+
+    <h3 class="filename">Fichier: config/prismaClient.js</h3>
+    <p>Ce module initialise et exporte le client Prisma pour être utilisé dans les contrôleurs.</p>
+    <pre><code>const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+module.exports = prisma;</code></pre>
+
+    <h2>4. Contrôleurs CRUD (Logique Métier)</h2>
+
+    <h3 class="filename">Fichier: controllers/productController.js</h3>
+    <p>Ce fichier contient les fonctions asynchrones pour gérer les interactions avec la base de données (CRUD).</p>
+    <pre><code>const prisma = require('../config/prismaClient'); 
+
+// --- CREATE (POST /api/products) ---
+exports.createProduct = async (req, res) => {
+  try {
+    const { name, description, price, countInStock } = req.body;
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price: parseFloat(price),
+        countInStock: parseInt(countInStock) || 0,
+      },
+    });
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(400).json({ message: 'Erreur lors de la création du produit.', error: error.message });
+  }
+};
+
+// --- READ ALL (GET /api/products) ---
+exports.getProducts = async (req, res) => {
+  try {
+    const products = await prisma.product.findMany();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la récupération des produits.' });
+  }
+};
+
+// --- READ ONE (GET /api/products/:id) ---
+exports.getProductById = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const product = await prisma.product.findUnique({
+      where: { id },
+    });
+    if (product) {
+      res.status(200).json(product);
+    } else {
+      res.status(404).json({ message: 'Produit non trouvé.' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+// --- UPDATE (PUT /api/products/:id) ---
+exports.updateProduct = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    // Préparer les données pour la mise à jour
+    const updateData = {};
+    if (req.body.name) updateData.name = req.body.name;
+    if (req.body.description !== undefined) updateData.description = req.body.description;
+    if (req.body.price !== undefined) updateData.price = parseFloat(req.body.price);
+    if (req.body.countInStock !== undefined) updateData.countInStock = parseInt(req.body.countInStock);
+    
+    const product = await prisma.product.update({
+      where: { id },
+      data: updateData,
+    });
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(400).json({ message: 'Erreur lors de la mise à jour du produit.', error: error.message });
+  }
+};
+
+// --- DELETE (DELETE /api/products/:id) ---
+exports.deleteProduct = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.product.delete({
+      where: { id },
+    });
+    res.status(204).send(); // 204 No Content
+  } catch (error) {
+    res.status(404).json({ message: 'Produit non trouvé ou erreur de suppression.', error: error.message });
+  }
+};</code></pre>
+
+    <h2>5. Définition des Routes</h2>
+
+    <h3 class="filename">Fichier: routes/productRoutes.js</h3>
+    <p>Ce fichier mappe les méthodes HTTP et les URLs aux fonctions du contrôleur.</p>
+    <pre><code>const express = require('express');
+const router = express.Router();
+const productController = require('../controllers/productController');
+
+// Route pour lister TOUS les produits et pour CREER un nouveau produit
+router.route('/')
+  .get(productController.getProducts)   // GET /api/products
+  .post(productController.createProduct); // POST /api/products
+
+// Route pour obtenir, mettre à jour, et supprimer un produit par ID
+router.route('/:id')
+  .get(productController.getProductById)    // GET /api/products/:id
+  .put(productController.updateProduct)     // PUT /api/products/:id
+  .delete(productController.deleteProduct); // DELETE /api/products/:id
+
+module.exports = router;</code></pre>
+
+    <h2>6. Fichier Serveur Principal</h2>
+
+    <h3 class="filename">Fichier: server.js</h3>
+    <p>Le point d'entrée de l'application qui configure Express et démarre le serveur.</p>
+    <pre><code>const express = require('express');
+const dotenv = require('dotenv');
+const productRoutes = require('./routes/productRoutes');
+
+// Charge les variables d'environnement
+dotenv.config();
+
+const app = express();
+
+// Middleware pour analyser le corps des requêtes en JSON
+app.use(express.json());
+
+// Route de base (test de santé du serveur)
+app.get('/', (req, res) => {
+  res.send('API des produits (Prisma/PostgreSQL) est opérationnelle.');
+});
+
+// Montage des routes produits avec le préfixe /api/products
+app.use('/api/products', productRoutes);
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(\`Serveur démarré sur le port \${PORT}\`);
+});</code></pre>
+
+    <h2>7. Lancement et Test de l'API</h2>
+
+    <h3>Lancement</h3>
+    <pre><code class="command">node server.js</code></pre>
+
+    <h3>Tests CRUD (avec Postman ou équivalent)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Opération</th>
+                <th>Méthode</th>
+                <th>URL</th>
+                <th>Corps de Requête (JSON pour POST/PUT)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>C</strong>reate</td>
+                <td><code>POST</code></td>
+                <td><code>/api/products</code></td>
+                <td><code>{"name": "Laptop", "description": "Puissant", "price": 1200.50, "countInStock": 10}</code></td>
+            </tr>
+            <tr>
+                <td><strong>R</strong>ead All</td>
+                <td><code>GET</code></td>
+                <td><code>/api/products</code></td>
+                <td>(Aucun)</td>
+            </tr>
+            <tr>
+                <td><strong>R</strong>ead One</td>
+                <td><code>GET</code></td>
+                <td><code>/api/products/1</code></td>
+                <td>(Aucun)</td>
+            </tr>
+            <tr>
+                <td><strong>U</strong>pdate</td>
+                <td><code>PUT</code></td>
+                <td><code>/api/products/1</code></td>
+                <td><code>{"price": 1150.00}</code></td>
+            </tr>
+            <tr>
+                <td><strong>D</strong>elete</td>
+                <td><code>DELETE</code></td>
+                <td><code>/api/products/1</code></td>
+                <td>(Aucun)</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "product-api/\r ├── node_modules/\r ├── .env\r ├── package.json\r ├── server.js               # Point d'entrée de l'application\r ├── config/\r │   └── db.js               # Configuration de la base de données\r ├── models/\r │   └── Product.js          # Schéma Mongoose pour le produit\r └── routes/\r     └── productRoutes.js    # Définition des routes de l'API",
+  "dependencies": {
+    "@prisma/client": "^6.17.1",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prisma": "^6.17.1"
+  }
+}
