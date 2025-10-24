@@ -38,7 +38,7 @@ Voici comment adapter la structure précédente pour utiliser **Express**, **Pri
 
 -----
 
-## 2\. Configuration de PostgreSQL et Prisma
+## 2\. Configuration de MySQL et Prisma
 
 ### a. Configuration de la Base de Données
 
@@ -46,8 +46,8 @@ Voici comment adapter la structure précédente pour utiliser **Express**, **Pri
 
     ```
     # Remplacez les valeurs par les vôtres
-    DATABASE_URL="postgresql://utilisateur:motdepasse@localhost:5432/nom_de_la_db?schema=public"
-    PORT=3000
+    DATABASE_URL="mysql://root:@localhost:3306/products"
+    PORT=5000
     ```
 
 2.  **Initialisez Prisma** :
@@ -56,7 +56,7 @@ Voici comment adapter la structure précédente pour utiliser **Express**, **Pri
     npx prisma init
     ```
 
-    Cette commande crée le dossier `prisma` et le fichier `prisma/schema.prisma`. Elle configure automatiquement le `provider` à `postgresql`.
+    Cette commande crée le dossier `prisma` et le fichier `prisma/schema.prisma`. Elle configure automatiquement le `provider` à `mysql`.
 
 ### b. Définition du Schéma de Produit
 
@@ -70,7 +70,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -88,7 +88,7 @@ model Product {
 
 ### c. Migration de la Base de Données
 
-Appliquez le schéma à votre base de données PostgreSQL :
+Appliquez le schéma à votre base de données MySQL :
 
 ```bash
 npx prisma migrate dev --name init_products_table
@@ -262,7 +262,7 @@ app.listen(PORT, () => {
 
 ## 6\. Lancement
 
-1.  Assurez-vous que votre serveur PostgreSQL est démarré.
+1.  Assurez-vous que votre serveur MySQL est démarré.
 2.  Lancez l'application :
     ```bash
     node server.js
