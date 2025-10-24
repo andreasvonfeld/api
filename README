@@ -84,6 +84,15 @@ model Product {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 ```
 
 ### c. Migration de la Base de Données
@@ -259,6 +268,7 @@ app.listen(PORT, () => {
 ```
 
 -----
+
 
 ## 6\. Lancement
 
