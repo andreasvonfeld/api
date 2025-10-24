@@ -14,7 +14,7 @@ product-api/
 
     Parfait \! Passer à **Prisma** avec **PostgreSQL** est un excellent choix pour une API REST moderne, car cela apporte de la robustesse et une meilleure gestion des types (idéal si vous prévoyez d'utiliser TypeScript, mais nous allons rester en JavaScript pour l'instant).
 
-Voici comment adapter la structure précédente pour utiliser **Express**, **Prisma**, et **PostgreSQL**.
+Voici comment adapter la structure précédente pour utiliser **Express**, **Prisma**, et **MySQL**.
 
 ## 1\. Initialisation et Installation
 
@@ -42,7 +42,7 @@ Voici comment adapter la structure précédente pour utiliser **Express**, **Pri
 
 ### a. Configuration de la Base de Données
 
-1.  **Créez un fichier `.env`** pour définir l'URI de connexion à votre base de données PostgreSQL :
+1.  **Créez un fichier `.env`** pour définir l'URI de connexion à votre base de données MySQL :
 
     ```
     # Remplacez les valeurs par les vôtres
@@ -242,7 +242,7 @@ app.use(express.json());
 
 // Santé du serveur
 app.get('/', (req, res) => {
-  res.send('API des produits (Prisma/PostgreSQL) en cours...');
+  res.send('API des produits (Prisma/MySQL) en cours...');
 });
 
 // Montage des routes produits
