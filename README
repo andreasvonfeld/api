@@ -281,4 +281,5 @@ app.listen(PORT, () => {
 
 Votre API CRUD est maintenant fonctionnelle avec **Express**, **Prisma**, et **MySQL** \! 🎉
 
-![CRUD](https://raw.githubusercontent.com/andreasvonfeld/api/refs/heads/main/assets/readme/crud.png)
+![CRUD](https://raw.githubusercontent.com/andreasvonfeld/api/main/assets/readme/crud.png)
+
