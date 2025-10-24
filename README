@@ -269,4 +269,4 @@ app.listen(PORT, () => {
     ```
     (Ou `nodemon server.js` si vous l'avez installé)
 
-Votre API CRUD est maintenant fonctionnelle avec **Express**, **Prisma**, et **PostgreSQL** \! 🎉
+Votre API CRUD est maintenant fonctionnelle avec **Express**, **Prisma**, et **MySQL** \! 🎉
