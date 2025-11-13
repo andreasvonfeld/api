@@ -21,10 +21,21 @@ exports.createProduct = async (req, res) => {
 // --- READ ALL (GET /api/products) ---
 exports.getProducts = async (req, res) => {
   try {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+      include: {
+        category: {
+          select: { type: true }, // récupère juste le libellé
+        },
+      },
+    });
+
     res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des produits.' });
+    console.error('getProducts error:', error);
+    res.status(500).json({
+      message: 'Erreur lors de la récupération des produits.',
+      detail: error.message,
+    });
   }
 };
 
@@ -32,11 +43,16 @@ exports.getProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const product = await prisma.product.findUnique({
+    const products = await prisma.product.findMany({
       where: { id },
+      include: {
+        category: {
+          select: { type: true }, // récupère juste le libellé
+        },
+      },
     });
-    if (product) {
-      res.status(200).json(product);
+    if (products) {
+      res.status(200).json(products);
     } else {
       res.status(404).json({ message: 'Produit non trouvé.' });
     }
