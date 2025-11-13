@@ -6,7 +6,7 @@ const IsAdmin = require('../middleware/admin');
 // ICI ➜ dossier singulier
 const { protect } = require('../middleware/auth');
 
-router.get('/allUsers', protect, IsAdmin, usersController.allUsers);
+router.get('/', protect, IsAdmin, usersController.allUsers);
 router.delete('/:id', protect, IsAdmin, usersController.deleteUser);
 
 module.exports = router;

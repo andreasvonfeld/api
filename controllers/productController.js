@@ -10,6 +10,7 @@ exports.createProduct = async (req, res) => {
         description,
         price: parseFloat(price),
         countInStock: parseInt(countInStock) || 0,
+        categoryId
       },
     });
     res.status(201).json(product);

@@ -17,7 +17,7 @@ model Product {
   countInStock   Int     @default(0) // Quantité en stock
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  category       ProductCategory @relation(fields: [categoryId], references: [id])
+  category       Category @relation(fields: [categoryId], references: [id])
   categoryId     Int
   
 }
@@ -31,8 +31,8 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-model ProductCategory {
+model Category {
   id        Int      @id @default(autoincrement())
-  type     String   @unique
+  type     String  
   products Product[]
 }

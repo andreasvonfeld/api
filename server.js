@@ -3,7 +3,8 @@ const dotenv = require('dotenv');
 
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
-const usersRoutes = require('./routes/usersRoutes'); // si ça existe
+const usersRoutes = require('./routes/usersRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 // Charge les variables d'environnement
 dotenv.config();
@@ -19,9 +20,10 @@ app.get('/', (req, res) => {
 });
 
 // Montage des routes
-app.use('/api/products', productRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/users', usersRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', usersRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 
 const PORT = process.env.PORT || 5000;
 
