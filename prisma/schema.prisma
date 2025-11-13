@@ -11,7 +11,7 @@ datasource db {
 // Modèle Produit
 model Product {
   id             Int     @id @default(autoincrement()) // Clé primaire auto-incrémentée
-  name           String  @unique // Nom unique
+  name           String  // Nom du produit
   description    String? // Description optionnelle (utilise String?)
   price          Float   // Prix (utilise Float ou Decimal)
   countInStock   Int     @default(0) // Quantité en stock

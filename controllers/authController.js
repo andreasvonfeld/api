@@ -43,6 +43,17 @@ exports.login = async (req, res) => {
   }
 };
 
+//GET /api/auth/allUsers
+exports.allUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, role: true, createdAt: true }
+    });
+    res.json({ users });
+  } catch (e) {
+    res.status(500).json({ message: 'Erreur serveur', detail: e.message });
+  } };
+
 // GET /api/auth/me
 exports.me = async (req, res) => {
   try {
