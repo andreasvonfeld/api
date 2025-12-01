@@ -14,12 +14,30 @@ model Product {
   name           String  // Nom du produit
   description    String? // Description optionnelle (utilise String?)
   price          Float   // Prix (utilise Float ou Decimal)
-  countInStock   Int     @default(0) // Quantité en stock
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   category       Category @relation(fields: [categoryId], references: [id])
   categoryId     Int
-  
+  variants     ProductSize[]
+}
+
+model Size {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  productSizes ProductSize[]
+}
+
+model ProductSize {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  sizeId    Int
+  stock     Int      @default(0)
+  CartItems CartItem[]
+
+  product   Product  @relation(fields: [productId], references: [id])
+  size      Size     @relation(fields: [sizeId], references: [id])
+
+  @@unique([productId, sizeId]) // une seule ligne par (produit, taille)
 }
 
 model User {
@@ -29,10 +47,28 @@ model User {
   role      String   @default("USER") // optionnel: "ADMIN" | "USER"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  cart      Cart?
 }
 
 model Category {
   id        Int      @id @default(autoincrement())
   type     String  
   products Product[]
+}
+
+model Cart {
+  id      Int        @id @default(autoincrement())
+  userId  Int        @unique
+  items   CartItem[]
+  user    User       @relation(fields: [userId], references: [id])
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId    Int
+  productSizeId Int
+  quantity  Int
+
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productSize   ProductSize @relation(fields: [productSizeId], references: [id])
 }
