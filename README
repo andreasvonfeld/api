@@ -1,4 +1,4 @@
-# 📦 API E-Commerce — Node.js / Express / Prisma / PostgreSQL
+# 📦 API E-Commerce — Node.js / Express / Prisma / MySQL
 
 Cette API e-commerce complète comprend :
 
@@ -8,7 +8,7 @@ Cette API e-commerce complète comprend :
 - 🛒 Panier dynamique avec gestion du stock
 - 👤 Gestion des utilisateurs (Admin)
 - 📚 Documentation Swagger intégrée
-- 🗄️ Prisma ORM avec PostgreSQL
+- 🗄️ Prisma ORM avec MySQL
 
 ---
 
