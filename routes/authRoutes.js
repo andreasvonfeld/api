@@ -163,4 +163,53 @@ router.post('/login', authController.login);
  */
 router.get('/me', protect, authController.me);
 
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Rafraîchir le token d'accès (Access Token)
+ *     description: |
+ *       Permet d'obtenir un **nouveau accessToken** et un **nouveau refreshToken** à partir d'un refresh token valide.
+ *       Le refresh token doit être envoyé dans le header **Authorization: Bearer <refreshToken>**.
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []   # On utilise le refresh token comme Bearer
+ *     responses:
+ *       200:
+ *         description: Nouveaux tokens générés avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     email:
+ *                       type: string
+ *                       example: "user@example.com"
+ *                     role:
+ *                       type: string
+ *                       example: "USER"
+ *                 accessToken:
+ *                   type: string
+ *                   example: "nouveau_access_token_jwt"
+ *                 refreshToken:
+ *                   type: string
+ *                   example: "nouveau_refresh_token_jwt"
+ *       400:
+ *         description: Refresh token manquant.
+ *       401:
+ *         description: Refresh token invalide ou expiré.
+ *       404:
+ *         description: Utilisateur introuvable.
+ *       500:
+ *         description: Erreur serveur.
+ */
+router.post('/refresh', authController.refresh);
+
+
 module.exports = router;
