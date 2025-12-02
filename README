@@ -86,7 +86,9 @@ cd api
     nodemon server.js
 
 
-## 6\. Lancement
+3. ##Lancement du serveur en local##
+
+Installez la BDD dans le repo sur Wamp64 (local)
 
 1.  Assurez-vous que votre serveur MySQL est démarré.
 2.  Lancez l'application :
@@ -97,7 +99,7 @@ cd api
 
 Votre API CRUD est maintenant fonctionnelle avec **Express**, **Prisma**, et **MySQL** \! 🎉
 
-## 7\. Logins
+4. ##Logins
 
 👑 Admin par défaut pour tester
 {
