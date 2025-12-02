@@ -15,6 +15,11 @@ const app = express();
 // Middleware JSON
 app.use(express.json());
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Route de test
 app.get('/', (req, res) => {
   res.send('API des produits (Prisma/PostgreSQL) est opérationnelle.');
