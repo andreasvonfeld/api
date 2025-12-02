@@ -113,4 +113,8 @@ Votre API CRUD est maintenant fonctionnelle avec **Express**, **Prisma**, et **M
   "password": "azerty123"
 }
 
+5/ ""Documentation Swagger
+
+Aller dans : http://localhost:5000/api-docs
+
 
