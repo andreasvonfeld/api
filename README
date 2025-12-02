@@ -88,7 +88,7 @@ cd api
 
 3. ##Lancement du serveur en local##
 
-Installez la BDD dans le repo sur Wamp64 (local)
+Installez la BDD dans le repo sur Wamp64 (local) 'products.sql'
 
 1.  Assurez-vous que votre serveur MySQL est démarré.
 2.  Lancez l'application :
